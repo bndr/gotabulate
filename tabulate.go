@@ -1,7 +1,6 @@
 package main
 
 import "fmt"
-import "reflect"
 import "bytes"
 
 // Basic Structure of TableFormat
@@ -17,6 +16,7 @@ type TableFormat struct {
 	FitScreen       bool
 }
 
+// Represents a Line
 type Line struct {
 	begin string
 	hline string
@@ -24,12 +24,16 @@ type Line struct {
 	end   string
 }
 
+// Represents a Row
 type Row struct {
 	begin string
 	sep   string
 	end   string
 }
 
+// Table Formats that are available to the user
+// The user can define his own format, just by addind an entry to this map
+// and calling it with Render function e.g t.Render("customFormat")
 var TableFormats = map[string]TableFormat{
 	"simple": TableFormat{
 		LineTop:         Line{"", "-", "  ", ""},
@@ -37,12 +41,12 @@ var TableFormats = map[string]TableFormat{
 		LineBottom:      Line{"", "-", "  ", ""},
 		HeaderRow:       Row{"", "  ", ""},
 		DataRow:         Row{"", "  ", ""},
-		Padding:         0,
+		Padding:         1,
 	},
 	"plain": TableFormat{
 		HeaderRow: Row{"", "  ", ""},
 		DataRow:   Row{"", "  ", ""},
-		Padding:   0,
+		Padding:   1,
 	},
 	"grid": TableFormat{
 		LineTop:         Line{"+", "-", "+", "+"},
@@ -55,17 +59,18 @@ var TableFormats = map[string]TableFormat{
 	},
 }
 
+// Main Tabulate structure
 type Tabulate struct {
 	Data        []*TabulateRow
 	Headers     []string
-	FormatFloat string
+	FormatFloat byte
 	TableFormat TableFormat
-	AlignNum    string
-	AlignStr    string
-	EmptyVar    string "None"
+	Align       string
+	EmptyVar    string
 	HideLines   []string
 }
 
+// Represents normalized tabulate Row
 type TabulateRow struct {
 	Elements []string
 }
@@ -127,11 +132,35 @@ func (t *Tabulate) padLeft(width int, str string) string {
 }
 
 func (t *Tabulate) padRight(width int, str string) string {
-	return ""
+	var buffer bytes.Buffer
+	padding := width - len(str)
+
+	buffer.WriteString(str)
+
+	// Add Padding right
+	for i := 0; i < padding; i++ {
+		buffer.WriteString(" ")
+	}
+	return buffer.String()
 }
 
 func (t *Tabulate) padCenter(width int, str string) string {
-	return ""
+	var buffer bytes.Buffer
+	padding := int((width - len(str)) / 2)
+
+	// Add padding left
+	for i := 0; i < padding; i++ {
+		buffer.WriteString(" ")
+	}
+	// Write string
+	buffer.WriteString(str)
+
+	// Add padding right
+	for i := 0; i < padding; i++ {
+		buffer.WriteString(" ")
+	}
+
+	return buffer.String()
 }
 
 func (t *Tabulate) buildLine(padded_widths []int, padding []int, l Line) string {
@@ -167,12 +196,16 @@ func (t *Tabulate) buildRow(elements []string, padded_widths []int, paddings []i
 
 	var buffer bytes.Buffer
 	buffer.WriteString(d.begin)
+	padFunc := t.getAlignFunc()
 	// Print contents
 	for i := 0; i < len(padded_widths); i++ {
+		output := padFunc(padded_widths[i], t.EmptyVar)
+		if len(elements) > i {
+			output = padFunc(padded_widths[i], elements[i])
+		}
+		buffer.WriteString(output)
 		if i != len(padded_widths)-1 {
-			buffer.WriteString(t.padLeft(padded_widths[i], elements[i]) + d.sep)
-		} else {
-			buffer.WriteString(t.padLeft(padded_widths[i], elements[i]))
+			buffer.WriteString(d.sep)
 		}
 	}
 	// Print end
@@ -207,7 +240,6 @@ func (t *Tabulate) Render(format ...interface{}) string {
 	}
 
 	// Get Column widths for all columns
-	// Padd all
 	cols := t.getWidths(t.Headers, t.Data)
 
 	padded_widths := make([]int, len(cols))
@@ -288,8 +320,26 @@ func (t *Tabulate) SetFormatting(format string) *Tabulate {
 	return t
 }
 
+func (t *Tabulate) SetAlign(align string) {
+	t.Align = align
+}
+
+func (t *Tabulate) getAlignFunc() func(int, string) string {
+	if len(t.Align) < 1 || t.Align == "right" {
+		return t.padLeft
+	} else if t.Align == "left" {
+		return t.padRight
+	} else {
+		return t.padCenter
+	}
+}
+
+func (t *Tabulate) SetEmptyString(empty string) {
+	t.EmptyVar = empty
+}
+
 func Create(data interface{}) *Tabulate {
-	t := &Tabulate{}
+	t := &Tabulate{FormatFloat: 'f'}
 
 	switch v := data.(type) {
 	case [][]string:
@@ -302,16 +352,18 @@ func Create(data interface{}) *Tabulate {
 		t.Data = createFromInt(data.([][]int))
 	case [][]bool:
 		t.Data = createFromBool(data.([][]bool))
+	case [][]float64:
+		t.Data = createFromFloat64(data.([][]float64), t.FormatFloat)
 	case [][]interface{}:
-		t.Data = createFromMixed(data.([][]interface{}))
+		t.Data = createFromMixed(data.([][]interface{}), t.FormatFloat)
 	case []string:
 		t.Data = createFromString([][]string{data.([]string)})
 	case []interface{}:
-		t.Data = createFromMixed([][]interface{}{data.([]interface{})})
+		t.Data = createFromMixed([][]interface{}{data.([]interface{})}, t.FormatFloat)
 	case map[string][]interface{}:
-		t.Data = createFromMapMixed(data.(map[string][]interface{}))
+		t.Headers, t.Data = createFromMapMixed(data.(map[string][]interface{}), t.FormatFloat)
 	case map[string][]string:
-		t.Data = createFromMapString(data.(map[string][]string))
+		t.Headers, t.Data = createFromMapString(data.(map[string][]string))
 	default:
 		fmt.Println(v)
 	}
@@ -322,24 +374,18 @@ func Create(data interface{}) *Tabulate {
 func main() {
 	row1 := []interface{}{"test_row1_1", "test_row1_2", "test_row1_3", 1, 2, 3, 11.10, '1'}
 	row2 := []interface{}{"test_row2_1", "testssss_row2_222222", "test_row2_3", 1, 2, 3}
-	row3 := []interface{}{"test_row3_1", "test_row3_2", "test_row3_3", 1, 2, 3}
+	row3 := []interface{}{"test_row3_2", "test_row3_3", 1}
 	t := Create([][]interface{}{row1, row2, row3})
 	t.SetHeaders([]string{"Test", "Test Hea222der 2", "Test Header 3", "T 4", "Test Header 5"})
+	t.SetEmptyString("None")
+	t.SetAlign("right")
 	fmt.Println(t.Render("grid"))
-	fmt.Printf("%#v", t.Data)
-}
 
-func InterfaceSlice(slice interface{}) []interface{} {
-	s := reflect.ValueOf(slice)
-	if s.Kind() != reflect.Slice {
-		panic("InterfaceSlice() given a non-slice type")
-	}
+	// Test Map
+	maptest := map[string][]interface{}{"test": row1, "test222": row2, "test header22": row3}
+	maptest_tabulate := Create(maptest)
+	maptest_tabulate.SetEmptyString("None")
+	maptest_tabulate.SetAlign("right")
+	fmt.Println(maptest_tabulate.Render("grid"))
 
-	ret := make([]interface{}, s.Len())
-
-	for i := 0; i < s.Len(); i++ {
-		ret[i] = s.Index(i).Interface()
-	}
-
-	return ret
 }
