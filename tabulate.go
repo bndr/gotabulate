@@ -60,6 +60,7 @@ var TableFormats = map[string]TableFormat{
 	},
 }
 
+// Minimum padding that will be applied
 var MIN_PADDING = 5
 
 // Main Tabulate structure
@@ -78,6 +79,7 @@ type TabulateRow struct {
 	Elements []string
 }
 
+// Add padding to each cell
 func (t *Tabulate) padRow(arr []string, padding int) []string {
 	if len(arr) < 1 {
 		return arr
@@ -102,6 +104,7 @@ func (t *Tabulate) padRow(arr []string, padding int) []string {
 	return padded
 }
 
+// Align right (Add padding left)
 func (t *Tabulate) padLeft(width int, str string) string {
 	var buffer bytes.Buffer
 	// Pad left
@@ -113,6 +116,7 @@ func (t *Tabulate) padLeft(width int, str string) string {
 	return buffer.String()
 }
 
+// Align Left (Add padding right)
 func (t *Tabulate) padRight(width int, str string) string {
 	var buffer bytes.Buffer
 	padding := width - len(str)
@@ -126,6 +130,7 @@ func (t *Tabulate) padRight(width int, str string) string {
 	return buffer.String()
 }
 
+// Center the element in the cell
 func (t *Tabulate) padCenter(width int, str string) string {
 	var buffer bytes.Buffer
 	length := len(str)
@@ -150,6 +155,7 @@ func (t *Tabulate) padCenter(width int, str string) string {
 	return buffer.String()
 }
 
+// Build Line based on padded_widths from t.GetWidths()
 func (t *Tabulate) buildLine(padded_widths []int, padding []int, l Line) string {
 	cells := make([]string, len(padded_widths))
 
@@ -179,6 +185,7 @@ func (t *Tabulate) buildLine(padded_widths []int, padding []int, l Line) string 
 	return buffer.String()
 }
 
+// Build Row based on padded_widths from t.GetWidths()
 func (t *Tabulate) buildRow(elements []string, padded_widths []int, paddings []int, d Row) string {
 
 	var buffer bytes.Buffer
@@ -203,6 +210,7 @@ func (t *Tabulate) buildRow(elements []string, padded_widths []int, paddings []i
 	return buffer.String()
 }
 
+// Render the data table
 func (t *Tabulate) Render(format ...interface{}) string {
 	var lines []string
 
@@ -266,6 +274,7 @@ func (t *Tabulate) Render(format ...interface{}) string {
 		lines = append(lines, t.buildLine(padded_widths, cols, t.TableFormat.LineBottom))
 	}
 
+	// Join lines
 	var buffer bytes.Buffer
 	for _, line := range lines {
 		buffer.WriteString(line + "\n")
@@ -274,6 +283,7 @@ func (t *Tabulate) Render(format ...interface{}) string {
 	return buffer.String()
 }
 
+// Calculate the max column width for each element
 func (t *Tabulate) getWidths(headers []string, data []*TabulateRow) []int {
 	widths := make([]int, len(headers))
 	current_max := len(t.EmptyVar)
@@ -295,28 +305,30 @@ func (t *Tabulate) getWidths(headers []string, data []*TabulateRow) []int {
 	return widths
 }
 
+// Set Headers of the table
+// If Headers count is less than the data row count, the headers will be padded to the right
 func (t *Tabulate) SetHeaders(headers []string) *Tabulate {
 	t.Headers = headers
 	return t
 }
 
 func (t *Tabulate) SetColWidth(width int) {
-
+	//TODO: Implement Max col Width
 }
 
-func (t *Tabulate) SetTableFormat(format string) {
-
-}
-
+// Set Float Formatting
+// will be used in strconv.FormatFloat(element, format, -1, 64)
 func (t *Tabulate) SetFloatFormat(format byte) *Tabulate {
 	t.FloatFormat = format
 	return t
 }
 
+// Set Align Type, Available options: left, right, center
 func (t *Tabulate) SetAlign(align string) {
 	t.Align = align
 }
 
+// Select the padding function based on the align type
 func (t *Tabulate) getAlignFunc() func(int, string) string {
 	if len(t.Align) < 1 || t.Align == "right" {
 		return t.padLeft
@@ -327,10 +339,15 @@ func (t *Tabulate) getAlignFunc() func(int, string) string {
 	}
 }
 
+// Set how an empty cell will be represented
 func (t *Tabulate) SetEmptyString(empty string) {
 	t.EmptyVar = empty + " "
 }
 
+// Create a new Tabulate Object
+// Accepts 2D String Array, 2D Int Array, 2D Int64 Array,
+// 2D Bool Array, 2D Float64 Array, 2D interface{} Array,
+// Map map[strig]string, Map map[string]interface{},
 func Create(data interface{}) *Tabulate {
 	t := &Tabulate{FloatFormat: 'f'}
 

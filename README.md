@@ -1,6 +1,6 @@
 # Gotabulate - Easily tabulate Data
-[![GoDoc](https://godoc.org/github.com/bndr/gopencils?status.svg)](https://godoc.org/github.com/bndr/gotabulate)
-[![Build Status](https://travis-ci.org/bndr/gopencils.svg?branch=master)](https://travis-ci.org/bndr/gotabulte)
+[![GoDoc](https://godoc.org/github.com/bndr/gotabulate?status.svg)](https://godoc.org/github.com/bndr/gotabulate)
+[![Build Status](https://travis-ci.org/bndr/gotabulate.svg?branch=master)](https://travis-ci.org/bndr/gotabulte)
 
 ## Summary
 
@@ -15,9 +15,46 @@ Supported Data Types:
 - 2D Array of Int, Int64, Float64, String, interface{}
 - Map of String, interface{} (Keys will be used as header)
 
+## Usage
+```go
+
+// Create Some Fake Rows
+row_1 := []interface{}{"john", 20, "ready"}
+row_2 := []interface{}{"bndr", 23, "ready"}
+
+// Create an object from 2D interface array
+t := gotabulate.Create([][]interface{}{row_1, row_2})
+
+// Set the Headers (optional)
+t.SetHeaders([]string{"age", "status"})
+
+// Set the Empty String (optional)
+t.SetEmptyString("None")
+
+// Set Align
+t.SetAlign("right")
+
+// Print the result
+fmt.Println(t.Render("grid"))
+
++---------+--------+-----------+
+|         |    age |    status |
++=========+========+===========+
+|    john |     20 |     ready |
++---------+--------+-----------+
+|    bndr |     23 |     ready |
++---------+--------+-----------+
+
+```
+
 ## Examples
 
 ```
+t := gotabulate.Create([][]string{STRING_ARRAY, STRING_ARRAY})
+t.SetHeaders(HEADERS) // If not headers are set, the first row will be used.
+t.SetEmptyString("None") // Set what will be printed in the empty cell
+rendered_string := t.Render("simple") // Render() will return a string
+
 Simple Table
 ----------------------  ----------------------  ----------------------  -------------  -------------
              Header 1                Header 2                Header 3       Header 4       Header 5 

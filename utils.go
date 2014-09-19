@@ -3,6 +3,7 @@ package gotabulate
 import "strconv"
 import "fmt"
 
+// Create normalized Array from strings
 func createFromString(data [][]string) []*TabulateRow {
 	rows := make([]*TabulateRow, len(data))
 
@@ -12,6 +13,7 @@ func createFromString(data [][]string) []*TabulateRow {
 	return rows
 }
 
+// Create normalized array of rows from mixed data (interface{})
 func createFromMixed(data [][]interface{}, format byte) []*TabulateRow {
 	rows := make([]*TabulateRow, len(data))
 	for index_1, element := range data {
@@ -32,7 +34,7 @@ func createFromMixed(data [][]interface{}, format byte) []*TabulateRow {
 			case uint64:
 				normalized[index] = strconv.FormatUint(el.(uint64), 10)
 			default:
-				normalized[index] = fmt.Sprintf("%#v", el)
+				normalized[index] = fmt.Sprintf("%s", el)
 			}
 		}
 		rows[index_1] = &TabulateRow{Elements: normalized}
@@ -40,6 +42,7 @@ func createFromMixed(data [][]interface{}, format byte) []*TabulateRow {
 	return rows
 }
 
+// Create normalized array from ints
 func createFromInt(data [][]int) []*TabulateRow {
 	rows := make([]*TabulateRow, len(data))
 	for index_1, arr := range data {
@@ -52,6 +55,7 @@ func createFromInt(data [][]int) []*TabulateRow {
 	return rows
 }
 
+// Create normalized array from float64
 func createFromFloat64(data [][]float64, format byte) []*TabulateRow {
 	rows := make([]*TabulateRow, len(data))
 	for index_1, arr := range data {
@@ -64,6 +68,7 @@ func createFromFloat64(data [][]float64, format byte) []*TabulateRow {
 	return rows
 }
 
+// Create normalized array from ints32
 func createFromInt32(data [][]int32) []*TabulateRow {
 	rows := make([]*TabulateRow, len(data))
 	for index_1, arr := range data {
@@ -77,6 +82,7 @@ func createFromInt32(data [][]int32) []*TabulateRow {
 	return rows
 }
 
+// Create normalized array from ints64
 func createFromInt64(data [][]int64) []*TabulateRow {
 	rows := make([]*TabulateRow, len(data))
 	for index_1, arr := range data {
@@ -89,6 +95,7 @@ func createFromInt64(data [][]int64) []*TabulateRow {
 	return rows
 }
 
+// Create normalized array from bools
 func createFromBool(data [][]bool) []*TabulateRow {
 	rows := make([]*TabulateRow, len(data))
 	for index_1, arr := range data {
@@ -101,6 +108,8 @@ func createFromBool(data [][]bool) []*TabulateRow {
 	return rows
 }
 
+// Create normalized array from a map of mixed elements (interface{})
+// Keys will be used as header
 func createFromMapMixed(data map[string][]interface{}, format byte) (headers []string, tData []*TabulateRow) {
 
 	var dataslice [][]interface{}
@@ -111,6 +120,8 @@ func createFromMapMixed(data map[string][]interface{}, format byte) (headers []s
 	return headers, createFromMixed(dataslice, format)
 }
 
+// Create normalized array from Map of strings
+// Keys will be used as header
 func createFromMapString(data map[string][]string) (headers []string, tData []*TabulateRow) {
 	var dataslice [][]string
 	for key, value := range data {
@@ -120,6 +131,7 @@ func createFromMapString(data map[string][]string) (headers []string, tData []*T
 	return headers, createFromString(dataslice)
 }
 
+// Check if element is present in a slice.
 func inSlice(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
