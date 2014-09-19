@@ -1,6 +1,6 @@
 # Gotabulate - Easily tabulate Data
 [![GoDoc](https://godoc.org/github.com/bndr/gotabulate?status.svg)](https://godoc.org/github.com/bndr/gotabulate)
-[![Build Status](https://travis-ci.org/bndr/gotabulate.svg?branch=master)](https://travis-ci.org/bndr/gotabulte)
+[![Build Status](https://travis-ci.org/bndr/gotabulate.svg?branch=master)](https://travis-ci.org/bndr/gotabulate)
 
 ## Summary
 
@@ -31,10 +31,10 @@ t.SetHeaders([]string{"age", "status"})
 // Set the Empty String (optional)
 t.SetEmptyString("None")
 
-// Set Align
+// Set Align (Optional)
 t.SetAlign("right")
 
-// Print the result
+// Print the result: grid, or simple
 fmt.Println(t.Render("grid"))
 
 +---------+--------+-----------+
