@@ -1,4 +1,4 @@
-package main
+package gotabulate
 
 import "testing"
 import "io/ioutil"

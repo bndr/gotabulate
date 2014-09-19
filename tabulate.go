@@ -1,7 +1,8 @@
-package main
+package gotabulate
 
 import "fmt"
 import "bytes"
+import "math"
 
 // Basic Structure of TableFormat
 type TableFormat struct {
@@ -59,11 +60,13 @@ var TableFormats = map[string]TableFormat{
 	},
 }
 
+var MIN_PADDING = 5
+
 // Main Tabulate structure
 type Tabulate struct {
 	Data        []*TabulateRow
 	Headers     []string
-	FormatFloat byte
+	FloatFormat byte
 	TableFormat TableFormat
 	Align       string
 	EmptyVar    string
@@ -73,26 +76,6 @@ type Tabulate struct {
 // Represents normalized tabulate Row
 type TabulateRow struct {
 	Elements []string
-}
-
-func (t *Tabulate) normalize() {
-
-}
-
-func (t *Tabulate) drawLine() {
-
-}
-
-func (t *Tabulate) padLine() {
-
-}
-
-func (t *Tabulate) format() {
-
-}
-
-func (t *Tabulate) alignCol(elements []string, align string, minwidth int) {
-
 }
 
 func (t *Tabulate) padRow(arr []string, padding int) []string {
@@ -126,7 +109,6 @@ func (t *Tabulate) padLeft(width int, str string) string {
 	for i := 0; i < padding; i++ {
 		buffer.WriteString(" ")
 	}
-
 	buffer.WriteString(str)
 	return buffer.String()
 }
@@ -146,20 +128,25 @@ func (t *Tabulate) padRight(width int, str string) string {
 
 func (t *Tabulate) padCenter(width int, str string) string {
 	var buffer bytes.Buffer
-	padding := int((width - len(str)) / 2)
+	length := len(str)
+
+	padding := int(math.Ceil(float64((width - length)) / 2.0))
 
 	// Add padding left
 	for i := 0; i < padding; i++ {
 		buffer.WriteString(" ")
 	}
+
 	// Write string
 	buffer.WriteString(str)
 
+	// Calculate how much space is left
+	current := (width - len(buffer.String()))
+
 	// Add padding right
-	for i := 0; i < padding; i++ {
+	for i := 0; i < current; i++ {
 		buffer.WriteString(" ")
 	}
-
 	return buffer.String()
 }
 
@@ -168,7 +155,7 @@ func (t *Tabulate) buildLine(padded_widths []int, padding []int, l Line) string 
 
 	for i, _ := range cells {
 		var buffer bytes.Buffer
-		for j := -1; j <= padding[i]; j++ {
+		for j := 0; j < padding[i]+MIN_PADDING; j++ {
 			buffer.WriteString(l.hline)
 		}
 		cells[i] = buffer.String()
@@ -199,9 +186,11 @@ func (t *Tabulate) buildRow(elements []string, padded_widths []int, paddings []i
 	padFunc := t.getAlignFunc()
 	// Print contents
 	for i := 0; i < len(padded_widths); i++ {
-		output := padFunc(padded_widths[i], t.EmptyVar)
+		output := ""
 		if len(elements) > i {
 			output = padFunc(padded_widths[i], elements[i])
+		} else {
+			output = padFunc(padded_widths[i], t.EmptyVar)
 		}
 		buffer.WriteString(output)
 		if i != len(padded_widths)-1 {
@@ -217,9 +206,9 @@ func (t *Tabulate) buildRow(elements []string, padded_widths []int, paddings []i
 func (t *Tabulate) Render(format ...interface{}) string {
 	var lines []string
 
-	// If headers are set use them, otherwise use the first row
+	// If headers are set use them, otherwise pop the first row
 	if len(t.Headers) < 1 {
-		t.Headers = t.Data[0].Elements
+		t.Headers, t.Data = t.Data[0].Elements, t.Data[1:]
 	}
 
 	// Use the format that was passed as parameter, otherwise
@@ -233,18 +222,12 @@ func (t *Tabulate) Render(format ...interface{}) string {
 		panic("No Data specified")
 	}
 
-	// Get Min widths for columns, based on headers
-	min_widths := make([]int, len(t.Headers))
-	for index, item := range t.Headers {
-		min_widths[index] = len(item)
-	}
-
 	// Get Column widths for all columns
 	cols := t.getWidths(t.Headers, t.Data)
 
 	padded_widths := make([]int, len(cols))
 	for i, _ := range padded_widths {
-		padded_widths[i] = cols[i] + 2*t.TableFormat.Padding
+		padded_widths[i] = cols[i] + MIN_PADDING*t.TableFormat.Padding
 	}
 
 	// Start appending lines
@@ -284,7 +267,7 @@ func (t *Tabulate) Render(format ...interface{}) string {
 
 func (t *Tabulate) getWidths(headers []string, data []*TabulateRow) []int {
 	widths := make([]int, len(headers))
-	current_max := 0
+	current_max := len(t.EmptyVar)
 	for i := 0; i < len(headers); i++ {
 		current_max = len(headers[i])
 		for _, item := range data {
@@ -316,7 +299,8 @@ func (t *Tabulate) SetTableFormat(format string) {
 
 }
 
-func (t *Tabulate) SetFormatting(format string) *Tabulate {
+func (t *Tabulate) SetFloatFormat(format byte) *Tabulate {
+	t.FloatFormat = format
 	return t
 }
 
@@ -335,11 +319,11 @@ func (t *Tabulate) getAlignFunc() func(int, string) string {
 }
 
 func (t *Tabulate) SetEmptyString(empty string) {
-	t.EmptyVar = empty
+	t.EmptyVar = empty + " "
 }
 
 func Create(data interface{}) *Tabulate {
-	t := &Tabulate{FormatFloat: 'f'}
+	t := &Tabulate{FloatFormat: 'f'}
 
 	switch v := data.(type) {
 	case [][]string:
@@ -353,15 +337,15 @@ func Create(data interface{}) *Tabulate {
 	case [][]bool:
 		t.Data = createFromBool(data.([][]bool))
 	case [][]float64:
-		t.Data = createFromFloat64(data.([][]float64), t.FormatFloat)
+		t.Data = createFromFloat64(data.([][]float64), t.FloatFormat)
 	case [][]interface{}:
-		t.Data = createFromMixed(data.([][]interface{}), t.FormatFloat)
+		t.Data = createFromMixed(data.([][]interface{}), t.FloatFormat)
 	case []string:
 		t.Data = createFromString([][]string{data.([]string)})
 	case []interface{}:
-		t.Data = createFromMixed([][]interface{}{data.([]interface{})}, t.FormatFloat)
+		t.Data = createFromMixed([][]interface{}{data.([]interface{})}, t.FloatFormat)
 	case map[string][]interface{}:
-		t.Headers, t.Data = createFromMapMixed(data.(map[string][]interface{}), t.FormatFloat)
+		t.Headers, t.Data = createFromMapMixed(data.(map[string][]interface{}), t.FloatFormat)
 	case map[string][]string:
 		t.Headers, t.Data = createFromMapString(data.(map[string][]string))
 	default:
@@ -369,23 +353,4 @@ func Create(data interface{}) *Tabulate {
 	}
 
 	return t
-}
-
-func main() {
-	row1 := []interface{}{"test_row1_1", "test_row1_2", "test_row1_3", 1, 2, 3, 11.10, '1'}
-	row2 := []interface{}{"test_row2_1", "testssss_row2_222222", "test_row2_3", 1, 2, 3}
-	row3 := []interface{}{"test_row3_2", "test_row3_3", 1}
-	t := Create([][]interface{}{row1, row2, row3})
-	t.SetHeaders([]string{"Test", "Test Hea222der 2", "Test Header 3", "T 4", "Test Header 5"})
-	t.SetEmptyString("None")
-	t.SetAlign("right")
-	fmt.Println(t.Render("grid"))
-
-	// Test Map
-	maptest := map[string][]interface{}{"test": row1, "test222": row2, "test header22": row3}
-	maptest_tabulate := Create(maptest)
-	maptest_tabulate.SetEmptyString("None")
-	maptest_tabulate.SetAlign("right")
-	fmt.Println(maptest_tabulate.Render("grid"))
-
 }
