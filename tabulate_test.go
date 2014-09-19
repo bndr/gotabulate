@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
 import "testing"
+import "io/ioutil"
 import "github.com/stretchr/testify/assert"
 
 var HEADERS = []string{"Header 1", "Header 2", "Header 3", "Header 4", "Header 5"}
@@ -10,79 +10,143 @@ var INT64_ARRAY = []int64{100, 500, 600, 1000, 10000}
 var FLOAT_ARRAY = []float64{10.01, 12.002, -123.5, 20.00005, 1.01}
 var STRING_ARRAY = []string{"test string", "test string 2", "test", "row", "bndr"}
 var MIXED_ARRAY = []interface{}{"string", 1, 1.005, "another string", -2}
+var EMPTY_ARRAY = []string{"4th element empty", "4th element empty", "4th element empty"}
+var MIXED_MAP = map[string][]interface{}{"header1": MIXED_ARRAY, "header2": MIXED_ARRAY}
 
 // Test Setters
 func TestSetFormat(t *testing.T) {
-
+	tabulate := Create([][]float64{FLOAT_ARRAY, FLOAT_ARRAY, FLOAT_ARRAY})
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetFloatFormat('f')
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/table_float"))
 }
 
-func TestPadLeft(t *testing.T) {
-
-}
-
-func TestPadRight(t *testing.T) {
-
-}
-
-func TestPadCenter(t *testing.T) {
+// Test Align Left, Align Right, Align Center
+func TestPads(t *testing.T) {
+	tabulate := Create([][]float64{FLOAT_ARRAY, FLOAT_ARRAY, FLOAT_ARRAY})
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetAlign("left")
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/table_float_right_pad"))
+	tabulate.SetAlign("right")
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/table_float"))
+	tabulate.SetAlign("center")
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/table_float_center_pad"))
 
 }
 
 func TestSetHeaders(t *testing.T) {
-
+	tabulate := Create([][]string{STRING_ARRAY})
+	tabulate.SetHeaders(HEADERS)
+	assert.Equal(t, tabulate.Render("simple"), readTable("_tests/test_headers"))
 }
 
 func TestHeadersFirstRow(t *testing.T) {
-
+	tabulate := Create([][]string{STRING_ARRAY, STRING_ARRAY})
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/test_first_row"))
 }
 
 func TestEmptyString(t *testing.T) {
-
+	tabulate := Create([][]string{STRING_ARRAY, EMPTY_ARRAY})
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/test_empty_element"))
 }
 
 func TestMaxColWidth(t *testing.T) {
-
+	// TODO
 }
 
 // Test Simple
 func TestSimpleFloats(t *testing.T) {
-
+	tabulate := Create([][]float64{FLOAT_ARRAY, FLOAT_ARRAY, FLOAT_ARRAY[:len(FLOAT_ARRAY)-1]})
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("simple"), readTable("_tests/simple_floats"))
 }
 
 func TestSimpleInts(t *testing.T) {
+	tabulate := Create([][]int{INT_ARRAY, INT_ARRAY, INT_ARRAY[:len(INT_ARRAY)-1]})
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("simple"), readTable("_tests/simple_ints"))
+}
 
+func TestSimpleInts64(t *testing.T) {
+	tabulate := Create([][]int64{INT64_ARRAY, INT64_ARRAY, INT64_ARRAY[:len(INT64_ARRAY)-1]})
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("simple"), readTable("_tests/simple_ints64"))
 }
 
 func TestSimpleString(t *testing.T) {
-
+	tabulate := Create([][]string{STRING_ARRAY, STRING_ARRAY, EMPTY_ARRAY})
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("simple"), readTable("_tests/simple_strings"))
 }
 
 func TestSimpleMixed(t *testing.T) {
-
+	tabulate := Create([][]interface{}{MIXED_ARRAY, MIXED_ARRAY})
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("simple"), readTable("_tests/simple_mixed"))
 }
 
 func TestSimpleMapMixed(t *testing.T) {
-
+	tabulate := Create(MIXED_MAP)
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("simple"), readTable("_tests/simple_map_mixed"))
 }
 
 // Test Grid
 
 func TestGridFloats(t *testing.T) {
-
+	tabulate := Create([][]float64{FLOAT_ARRAY, FLOAT_ARRAY, FLOAT_ARRAY[:len(FLOAT_ARRAY)-1]})
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/grid_floats"))
 }
 
 func TestGridInts(t *testing.T) {
+	tabulate := Create([][]int{INT_ARRAY, INT_ARRAY, INT_ARRAY[:len(INT_ARRAY)-1]})
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/grid_ints"))
+}
 
+func TestGridInts64(t *testing.T) {
+	tabulate := Create([][]int64{INT64_ARRAY, INT64_ARRAY, INT64_ARRAY[:len(INT64_ARRAY)-1]})
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/grid_ints64"))
 }
 
 func TestGridString(t *testing.T) {
-
+	tabulate := Create([][]string{STRING_ARRAY, STRING_ARRAY, EMPTY_ARRAY})
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/grid_strings"))
 }
 
 func TestGridMixed(t *testing.T) {
-
+	tabulate := Create([][]interface{}{MIXED_ARRAY, MIXED_ARRAY})
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/grid_mixed"))
 }
 
 func TestGridMapMixed(t *testing.T) {
+	tabulate := Create(MIXED_MAP)
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/grid_map_mixed"))
+}
 
+func readTable(path string) string {
+	buf, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	return string(buf)
 }
