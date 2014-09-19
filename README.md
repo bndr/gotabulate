@@ -47,6 +47,32 @@ fmt.Println(t.Render("grid"))
 
 ```
 
+## Example with String
+
+```
+// Some Strings
+string_1 := []string{"TV", "1000$", "Sold"}
+string_2 := []string{"PC", "50%", "on Hold"}
+
+// Create Object
+tabulate := gotabulate.Create([][]string{string_1, string_2})
+
+// Set Headers
+tabulate.SetHeaders([]string{"Type", "Cost", "Status"})
+
+// Render
+fmt.Println(tabulate.Render("simple"))
+
+---------  ----------  ------------
+    Type        Cost        Status
+---------  ----------  ------------
+      TV       1000$          Sold
+
+      PC         50%       on Hold
+---------  ----------  ------------
+
+```
+
 ## Examples
 
 ```
@@ -111,6 +137,9 @@ Align Left:
 +-------------+-------------+-------------+-------------+-------------+
 ```
 
+### Status
+Beta version. There may be edge cases that I have missed, so if your tables don't render properly please open up an issue. 
+
 ### TODO
-- Max size of cell
-- linewrap in cell
+- Define Max size of cell
+- Linewrap in cell
