@@ -140,6 +140,18 @@ Align Left:
 ### Status
 Beta version. There may be edge cases that I have missed, so if your tables don't render properly please open up an issue. 
 
+## Contribute
+
+All Contributions are welcome. The todo list is on the bottom of this README. Feel free to send a pull request.
+
+## License
+
+Apache License 2.0
+
 ### TODO
 - Define Max size of cell
 - Linewrap in cell
+
+### Acknowledgement
+
+Inspired by Python package https://pypi.python.org/pypi/tabulate
