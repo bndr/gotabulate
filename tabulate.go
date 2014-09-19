@@ -222,6 +222,15 @@ func (t *Tabulate) Render(format ...interface{}) string {
 		panic("No Data specified")
 	}
 
+	if len(t.Headers) < len(t.Data[0].Elements) {
+		diff := len(t.Data[0].Elements) - len(t.Headers)
+		padded_header := make([]string, diff)
+		for _, e := range t.Headers {
+			padded_header = append(padded_header, e)
+		}
+		t.Headers = padded_header
+	}
+
 	// Get Column widths for all columns
 	cols := t.getWidths(t.Headers, t.Data)
 

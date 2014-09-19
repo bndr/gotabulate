@@ -143,6 +143,13 @@ func TestGridMapMixed(t *testing.T) {
 	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/grid_map_mixed"))
 }
 
+func TestPaddedHeader(t *testing.T) {
+	tabulate := Create([][]string{STRING_ARRAY, STRING_ARRAY, EMPTY_ARRAY})
+	tabulate.SetHeaders([]string{"Header 1", "header 2", "header 3", "header 4"})
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/test_padded_headers"))
+}
+
 func readTable(path string) string {
 	buf, err := ioutil.ReadFile(path)
 	if err != nil {

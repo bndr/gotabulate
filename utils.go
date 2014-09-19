@@ -1,4 +1,4 @@
-package main
+package gotabulate
 
 import "strconv"
 import "fmt"
