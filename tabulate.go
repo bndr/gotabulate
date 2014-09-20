@@ -198,10 +198,10 @@ func (t *Tabulate) buildRow(elements []string, padded_widths []int, paddings []i
 	// Print contents
 	for i := 0; i < len(padded_widths); i++ {
 		output := ""
-		if len(elements) > i {
-			output = padFunc(padded_widths[i], elements[i])
-		} else {
+		if len(elements) <= i || (len(elements) > i && elements[i] == " nil ") {
 			output = padFunc(padded_widths[i], t.EmptyVar)
+		} else if len(elements) > i {
+			output = padFunc(padded_widths[i], elements[i])
 		}
 		buffer.WriteString(output)
 		if i != len(padded_widths)-1 {

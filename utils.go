@@ -33,6 +33,8 @@ func createFromMixed(data [][]interface{}, format byte) []*TabulateRow {
 				normalized[index] = strconv.FormatFloat(el.(float64), format, -1, 64)
 			case uint64:
 				normalized[index] = strconv.FormatUint(el.(uint64), 10)
+			case nil:
+				normalized[index] = "nil"
 			default:
 				normalized[index] = fmt.Sprintf("%s", el)
 			}
