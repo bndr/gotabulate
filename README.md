@@ -149,8 +149,10 @@ All Contributions are welcome. The todo list is on the bottom of this README. Fe
 Apache License 2.0
 
 ### TODO
+- Add more examples
+- Implement more data table formats
+- Wrap Long strings to multiple cells
 - Define Max size of cell
-- Linewrap in cell
 
 ### Acknowledgement
 

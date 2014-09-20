@@ -344,6 +344,15 @@ func (t *Tabulate) SetEmptyString(empty string) {
 	t.EmptyVar = empty + " "
 }
 
+// Set which lines to hide.
+// Can be:
+// top - Top line of the table,
+// belowheader - Line below the header,
+// bottom - Bottom line of the table
+func (t *Tabulate) SetHideLines(hide []string) {
+	t.HideLines = hide
+}
+
 // Create a new Tabulate Object
 // Accepts 2D String Array, 2D Int Array, 2D Int64 Array,
 // 2D Bool Array, 2D Float64 Array, 2D interface{} Array,

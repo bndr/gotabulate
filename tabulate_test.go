@@ -150,6 +150,13 @@ func TestPaddedHeader(t *testing.T) {
 	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/test_padded_headers"))
 }
 
+func TestHideLineBelowHeader(t *testing.T) {
+	tabulate := Create([][]string{STRING_ARRAY, STRING_ARRAY, EMPTY_ARRAY})
+	tabulate.SetHeaders([]string{"Header 1", "header 2", "header 3", "header 4"})
+	tabulate.SetHideLines([]string{"belowheader"})
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/test_hide_lines"))
+}
+
 func readTable(path string) string {
 	buf, err := ioutil.ReadFile(path)
 	if err != nil {
