@@ -72,11 +72,15 @@ type Tabulate struct {
 	Align       string
 	EmptyVar    string
 	HideLines   []string
+	MaxSize     int
+	WrapStrings bool
 }
 
 // Represents normalized tabulate Row
 type TabulateRow struct {
-	Elements []string
+	Elements  []string
+	Continuos bool
+	Extra     bool
 }
 
 // Add padding to each cell
@@ -225,6 +229,11 @@ func (t *Tabulate) Render(format ...interface{}) string {
 		t.TableFormat = TableFormats[format[0].(string)]
 	}
 
+	// If Wrap Strings is set to True,then break up the string to multiple cells
+	if t.WrapStrings {
+		t.Data = t.wrapCellData()
+	}
+
 	// Check if Data is present
 	if len(t.Data) < 1 {
 		panic("No Data specified")
@@ -266,7 +275,9 @@ func (t *Tabulate) Render(format ...interface{}) string {
 	for index, element := range t.Data {
 		lines = append(lines, t.buildRow(t.padRow(element.Elements, t.TableFormat.Padding), padded_widths, cols, t.TableFormat.DataRow))
 		if index < len(t.Data)-1 {
-			lines = append(lines, t.buildLine(padded_widths, cols, t.TableFormat.LineBetweenRows))
+			if element.Continuos != true {
+				lines = append(lines, t.buildLine(padded_widths, cols, t.TableFormat.LineBetweenRows))
+			}
 		}
 	}
 
@@ -312,10 +323,6 @@ func (t *Tabulate) SetHeaders(headers []string) *Tabulate {
 	return t
 }
 
-func (t *Tabulate) SetColWidth(width int) {
-	//TODO: Implement Max col Width
-}
-
 // Set Float Formatting
 // will be used in strconv.FormatFloat(element, format, -1, 64)
 func (t *Tabulate) SetFloatFormat(format byte) *Tabulate {
@@ -353,12 +360,57 @@ func (t *Tabulate) SetHideLines(hide []string) {
 	t.HideLines = hide
 }
 
+func (t *Tabulate) SetWrapStrings(wrap bool) {
+	t.WrapStrings = wrap
+}
+
+// Sets the maximum size of cell
+// If WrapStrings is set to true, then the string inside
+// the cell will be split up into multiple cell
+func (t *Tabulate) SetMaxCellSize(max int) {
+	t.MaxSize = max
+}
+
+// If string size is larger than t.MaxSize, then split it to multiple cells (downwards)
+func (t *Tabulate) wrapCellData() []*TabulateRow {
+	var arr []*TabulateRow
+	next := t.Data[0]
+	for index := 0; index <= len(t.Data); index++ {
+		elements := next.Elements
+		new_elements := make([]string, len(elements))
+
+		for i, e := range elements {
+			if len(e) > t.MaxSize {
+				new_elements[i] = e[t.MaxSize:]
+				elements[i] = e[:t.MaxSize]
+				next.Continuos = true
+			}
+		}
+
+		if next.Continuos {
+			arr = append(arr, next)
+			next = &TabulateRow{Elements: new_elements, Extra: true}
+			index--
+		} else if next.Extra && index+1 < len(t.Data) {
+			arr = append(arr, next)
+			next = t.Data[index+1]
+		} else if index+1 < len(t.Data) {
+			arr = append(arr, next)
+			next = t.Data[index+1]
+		} else if index >= len(t.Data) {
+			arr = append(arr, next)
+		}
+
+	}
+	return arr
+}
+
 // Create a new Tabulate Object
 // Accepts 2D String Array, 2D Int Array, 2D Int64 Array,
 // 2D Bool Array, 2D Float64 Array, 2D interface{} Array,
 // Map map[strig]string, Map map[string]interface{},
 func Create(data interface{}) *Tabulate {
-	t := &Tabulate{FloatFormat: 'f'}
+	t := &Tabulate{FloatFormat: 'f', MaxSize: 30}
 
 	switch v := data.(type) {
 	case [][]string:

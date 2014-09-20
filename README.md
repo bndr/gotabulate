@@ -11,7 +11,8 @@ Go-Tabulate - Generic Go Library for easy tabulation of your data.
     go get github.com/bndr/gotabulate
 
 ## Description
-Supported Data Types:
+
+Supported data types:
 - 2D Array of Int, Int64, Float64, String, interface{}
 - Map of String, interface{} (Keys will be used as header)
 
@@ -73,6 +74,65 @@ fmt.Println(tabulate.Render("simple"))
 
 ```
 
+## Example with String Wrapping
+
+```go
+tabulate := gotabulate.Create([][]string{[]string{"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus laoreet vestibulum pretium. Nulla et ornare elit. Cum sociis natoque penatibus et magnis",
+	"Vivamus laoreet vestibulum pretium. Nulla et ornare elit. Cum sociis natoque penatibus et magnis", "zzLorem ipsum", " test", "test"}, []string{"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus laoreet vestibulum pretium. Nulla et ornare elit. Cum sociis natoque penatibus et magnis",
+	"Vivamus laoreet vestibulum pretium. Nulla et ornare elit. Cum sociis natoque penatibus et magnis", "zzLorem ipsum", " test", "test"}, STRING_ARRAY, []string{"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus laoreet vestibulum pretium. Nulla et ornare elit. Cum sociis natoque penatibus et magnis",
+	"Vivamus laoreet vestibulum pretium. Nulla et ornare elit. Cum sociis natoque penatibus et magnis", "zzLorem ipsum", " test", "test"}, STRING_ARRAY})
+tabulate.SetHeaders([]string{"Header 1", "header 2", "header 3", "header 4"})
+// Set Max Cell Size
+tabulate.SetMaxCellSize(16)
+
+// Turn On String Wrapping
+tabulate.SetWrapStrings(true)
+
+// Render the table
+fmt.Println(tabulate.Render("grid"))
+
++---------------------+---------------------+----------------+-------------+-------------+
+|                     |            Header 1 |       header 2 |    header 3 |    header 4 |
++=====================+=====================+================+=============+=============+
+|    Lorem ipsum dolo |    Vivamus laoreet  |    Lorem ipsum |        test |        test |
+|    r sit amet, cons |    vestibulum preti |                |             |             |
+|    ectetur adipisci |    um. Nulla et orn |                |             |             |
+|    ng elit. Vivamus |    are elit. Cum so |                |             |             |
+|     laoreet vestibu |    ciis natoque pen |                |             |             |
+|    lum pretium. Nul |    atibus et magnis |                |             |             |
+|    la et ornare eli |                     |                |             |             |
+|    t. Cum sociis na |                     |                |             |             |
+|    toque penatibus  |                     |                |             |             |
+|           et magnis |                     |                |             |             |
++---------------------+---------------------+----------------+-------------+-------------+
+|    Lorem ipsum dolo |    Vivamus laoreet  |    Lorem ipsum |        test |        test |
+|    r sit amet, cons |    vestibulum preti |                |             |             |
+|    ectetur adipisci |    um. Nulla et orn |                |             |             |
+|    ng elit. Vivamus |    are elit. Cum so |                |             |             |
+|     laoreet vestibu |    ciis natoque pen |                |             |             |
+|    lum pretium. Nul |    atibus et magnis |                |             |             |
+|    la et ornare eli |                     |                |             |             |
+|    t. Cum sociis na |                     |                |             |             |
+|    toque penatibus  |                     |                |             |             |
+|           et magnis |                     |                |             |             |
++---------------------+---------------------+----------------+-------------+-------------+
+|         test string |       test string 2 |           test |         row |        bndr |
++---------------------+---------------------+----------------+-------------+-------------+
+|    Lorem ipsum dolo |    Vivamus laoreet  |    Lorem ipsum |        test |        test |
+|    r sit amet, cons |    vestibulum preti |                |             |             |
+|    ectetur adipisci |    um. Nulla et orn |                |             |             |
+|    ng elit. Vivamus |    are elit. Cum so |                |             |             |
+|     laoreet vestibu |    ciis natoque pen |                |             |             |
+|    lum pretium. Nul |    atibus et magnis |                |             |             |
+|    la et ornare eli |                     |                |             |             |
+|    t. Cum sociis na |                     |                |             |             |
+|    toque penatibus  |                     |                |             |             |
+|           et magnis |                     |                |             |             |
++---------------------+---------------------+----------------+-------------+-------------+
+|         test string |       test string 2 |           test |         row |        bndr |
++---------------------+---------------------+----------------+-------------+-------------+
+
+```
 ## Examples
 
 ```
@@ -92,7 +152,7 @@ Simple Table
     4th element empty       4th element empty       4th element empty           None           None 
 ----------------------  ----------------------  ----------------------  -------------  -------------
 
-Grid Table
+Grid Table (Align Right)
 +-------------+-------------+-------------+-------------+-------------+
 |    Header 1 |    Header 2 |    Header 3 |    Header 4 |    Header 5 |
 +=============+=============+=============+=============+=============+
@@ -151,8 +211,6 @@ Apache License 2.0
 ### TODO
 - Add more examples
 - Implement more data table formats
-- Wrap Long strings to multiple cells
-- Define Max size of cell
 
 ### Acknowledgement
 
