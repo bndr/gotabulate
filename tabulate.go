@@ -83,6 +83,24 @@ type TabulateRow struct {
 	Extra     bool
 }
 
+type writeBuffer struct {
+	Buffer bytes.Buffer
+}
+
+func createBuffer() *writeBuffer {
+	return &writeBuffer{}
+}
+
+func (b *writeBuffer) Write(str string, count int) *writeBuffer {
+	for i := 0; i < count; i++ {
+		b.Buffer.WriteString(str)
+	}
+	return b
+}
+func (b *writeBuffer) String() string {
+	return b.Buffer.String()
+}
+
 // Add padding to each cell
 func (t *Tabulate) padRow(arr []string, padding int) []string {
 	if len(arr) < 1 {
@@ -90,73 +108,40 @@ func (t *Tabulate) padRow(arr []string, padding int) []string {
 	}
 	padded := make([]string, len(arr))
 	for index, el := range arr {
-		var buffer bytes.Buffer
-		// Pad left
-		for i := 0; i < padding; i++ {
-			buffer.WriteString(" ")
-		}
-
-		buffer.WriteString(el)
-
-		// Pad Right
-		for i := 0; i < padding; i++ {
-			buffer.WriteString(" ")
-		}
-
-		padded[index] = buffer.String()
+		b := createBuffer()
+		b.Write(" ", padding)
+		b.Write(el, 1)
+		b.Write(" ", padding)
+		padded[index] = b.String()
 	}
 	return padded
 }
 
 // Align right (Add padding left)
 func (t *Tabulate) padLeft(width int, str string) string {
-	var buffer bytes.Buffer
-	// Pad left
-	padding := width - len(str)
-	for i := 0; i < padding; i++ {
-		buffer.WriteString(" ")
-	}
-	buffer.WriteString(str)
-	return buffer.String()
+	b := createBuffer()
+	b.Write(" ", (width - len(str)))
+	b.Write(str, 1)
+	return b.String()
 }
 
 // Align Left (Add padding right)
 func (t *Tabulate) padRight(width int, str string) string {
-	var buffer bytes.Buffer
-	padding := width - len(str)
-
-	buffer.WriteString(str)
-
-	// Add Padding right
-	for i := 0; i < padding; i++ {
-		buffer.WriteString(" ")
-	}
-	return buffer.String()
+	b := createBuffer()
+	b.Write(str, 1)
+	b.Write(" ", (width - len(str)))
+	return b.String()
 }
 
 // Center the element in the cell
 func (t *Tabulate) padCenter(width int, str string) string {
-	var buffer bytes.Buffer
-	length := len(str)
+	b := createBuffer()
+	padding := int(math.Ceil(float64((width - len(str))) / 2.0))
+	b.Write(" ", padding)
+	b.Write(str, 1)
+	b.Write(" ", (width - len(b.String())))
 
-	padding := int(math.Ceil(float64((width - length)) / 2.0))
-
-	// Add padding left
-	for i := 0; i < padding; i++ {
-		buffer.WriteString(" ")
-	}
-
-	// Write string
-	buffer.WriteString(str)
-
-	// Calculate how much space is left
-	current := (width - len(buffer.String()))
-
-	// Add padding right
-	for i := 0; i < current; i++ {
-		buffer.WriteString(" ")
-	}
-	return buffer.String()
+	return b.String()
 }
 
 // Build Line based on padded_widths from t.GetWidths()
@@ -164,27 +149,22 @@ func (t *Tabulate) buildLine(padded_widths []int, padding []int, l Line) string 
 	cells := make([]string, len(padded_widths))
 
 	for i, _ := range cells {
-		var buffer bytes.Buffer
-		for j := 0; j < padding[i]+MIN_PADDING; j++ {
-			buffer.WriteString(l.hline)
-		}
-		cells[i] = buffer.String()
+		b := createBuffer()
+		b.Write(l.hline, padding[i]+MIN_PADDING)
+		cells[i] = b.String()
 	}
-	var buffer bytes.Buffer
 
-	// Print begin
+	var buffer bytes.Buffer
 	buffer.WriteString(l.begin)
 
 	// Print contents
 	for i := 0; i < len(cells); i++ {
+		buffer.WriteString(cells[i])
 		if i != len(cells)-1 {
-			buffer.WriteString(cells[i] + l.sep)
-		} else {
-			buffer.WriteString(cells[i])
+			buffer.WriteString(l.sep)
 		}
 	}
 
-	// Print end
 	buffer.WriteString(l.end)
 	return buffer.String()
 }
@@ -208,9 +188,8 @@ func (t *Tabulate) buildRow(elements []string, padded_widths []int, paddings []i
 			buffer.WriteString(d.sep)
 		}
 	}
-	// Print end
-	buffer.WriteString(d.end)
 
+	buffer.WriteString(d.end)
 	return buffer.String()
 }
 
