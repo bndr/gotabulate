@@ -81,7 +81,6 @@ type Tabulate struct {
 type TabulateRow struct {
 	Elements  []string
 	Continuos bool
-	Extra     bool
 }
 
 type writeBuffer struct {
@@ -283,9 +282,10 @@ func (t *Tabulate) getWidths(headers []string, data []*TabulateRow) []int {
 		for _, item := range data {
 			if len(item.Elements) > i && len(widths) > i {
 				element := item.Elements[i]
-				if runewidth.StringWidth(element) > current_max {
-					widths[i] = runewidth.StringWidth(element)
-					current_max = runewidth.StringWidth(element)
+				strLength := runewidth.StringWidth(element)
+				if strLength > current_max {
+					widths[i] = strLength
+					current_max = strLength
 				} else {
 					widths[i] = current_max
 				}
@@ -369,11 +369,8 @@ func (t *Tabulate) wrapCellData() []*TabulateRow {
 
 		if next.Continuos {
 			arr = append(arr, next)
-			next = &TabulateRow{Elements: new_elements, Extra: true}
+			next = &TabulateRow{Elements: new_elements}
 			index--
-		} else if next.Extra && index+1 < len(t.Data) {
-			arr = append(arr, next)
-			next = t.Data[index+1]
 		} else if index+1 < len(t.Data) {
 			arr = append(arr, next)
 			next = t.Data[index+1]
