@@ -176,6 +176,17 @@ func TestWrapCellsSimple(t *testing.T) {
 	tabulate.SetWrapStrings(true)
 	assert.Equal(t, tabulate.Render("simple"), readTable("_tests/test_string_wrap_simple"))
 }
+func TestMultiByteString(t *testing.T) {
+	tabulate := Create([][]string{
+		{"朝", "おはようございます"},
+		{"昼", "こんにちわ"},
+		{"夜", "こんばんわ"},
+	})
+	tabulate.SetHeaders([]string{"時間帯", "挨拶"})
+	tabulate.SetMaxCellSize(10)
+	tabulate.SetWrapStrings(true)
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/test_multibyte_string"))
+}
 func readTable(path string) string {
 	buf, err := ioutil.ReadFile(path)
 	if err != nil {

@@ -2,6 +2,7 @@ package gotabulate
 
 import "fmt"
 import "bytes"
+import "github.com/mattn/go-runewidth"
 import "math"
 
 // Basic Structure of TableFormat
@@ -120,7 +121,7 @@ func (t *Tabulate) padRow(arr []string, padding int) []string {
 // Align right (Add padding left)
 func (t *Tabulate) padLeft(width int, str string) string {
 	b := createBuffer()
-	b.Write(" ", (width - len(str)))
+	b.Write(" ", (width - runewidth.StringWidth(str)))
 	b.Write(str, 1)
 	return b.String()
 }
@@ -129,17 +130,17 @@ func (t *Tabulate) padLeft(width int, str string) string {
 func (t *Tabulate) padRight(width int, str string) string {
 	b := createBuffer()
 	b.Write(str, 1)
-	b.Write(" ", (width - len(str)))
+	b.Write(" ", (width - runewidth.StringWidth(str)))
 	return b.String()
 }
 
 // Center the element in the cell
 func (t *Tabulate) padCenter(width int, str string) string {
 	b := createBuffer()
-	padding := int(math.Ceil(float64((width - len(str))) / 2.0))
+	padding := int(math.Ceil(float64((width - runewidth.StringWidth(str))) / 2.0))
 	b.Write(" ", padding)
 	b.Write(str, 1)
-	b.Write(" ", (width - len(b.String())))
+	b.Write(" ", (width - runewidth.StringWidth(b.String())))
 
 	return b.String()
 }
@@ -278,13 +279,13 @@ func (t *Tabulate) getWidths(headers []string, data []*TabulateRow) []int {
 	widths := make([]int, len(headers))
 	current_max := len(t.EmptyVar)
 	for i := 0; i < len(headers); i++ {
-		current_max = len(headers[i])
+		current_max = runewidth.StringWidth(headers[i])
 		for _, item := range data {
 			if len(item.Elements) > i && len(widths) > i {
 				element := item.Elements[i]
-				if len(element) > current_max {
-					widths[i] = len(element)
-					current_max = len(element)
+				if runewidth.StringWidth(element) > current_max {
+					widths[i] = runewidth.StringWidth(element)
+					current_max = runewidth.StringWidth(element)
 				} else {
 					widths[i] = current_max
 				}
@@ -359,9 +360,9 @@ func (t *Tabulate) wrapCellData() []*TabulateRow {
 		new_elements := make([]string, len(elements))
 
 		for i, e := range elements {
-			if len(e) > t.MaxSize {
-				new_elements[i] = e[t.MaxSize:]
-				elements[i] = e[:t.MaxSize]
+			if runewidth.StringWidth(e) > t.MaxSize {
+				elements[i] = runewidth.Truncate(e, t.MaxSize, "")
+				new_elements[i] = e[len(elements[i]):]
 				next.Continuos = true
 			}
 		}
