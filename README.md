@@ -13,12 +13,12 @@ Go-Tabulate - Generic Go Library for easy pretty-printing of tabular data.
 ## Description
 
 Supported data types:
-- 2D Array of Int, Int64, Float64, String, interface{}
-- Map of String, interface{} (Keys will be used as header)
+- 2D Array of `Int`, `Int64`, `Float64`, `String`, `interface{}`
+- Map of `String`, `interface{}` (Keys will be used as header)
 
 ## Usage
-```go
 
+```go
 // Create Some Fake Rows
 row_1 := []interface{}{"john", 20, "ready"}
 row_2 := []interface{}{"bndr", 23, "ready"}
@@ -45,7 +45,6 @@ fmt.Println(t.Render("grid"))
 +---------+--------+-----------+
 |    bndr |     23 |     ready |
 +---------+--------+-----------+
-
 ```
 
 ## Example with String
@@ -71,13 +70,11 @@ fmt.Println(tabulate.Render("simple"))
 
       PC         50%       on Hold
 ---------  ----------  ------------
-
 ```
 
 ## Example with String Wrapping
 
 ```go
-
 tabulate := gotabulate.Create([][]string{[]string{"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus laoreet vestibulum pretium. Nulla et ornare elit. Cum sociis natoque penatibus et magnis",
 	"Vivamus laoreet vestibulum pretium. Nulla et ornare elit. Cum sociis natoque penatibus et magnis", "zzLorem ipsum", " test", "test"}, []string{"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus laoreet vestibulum pretium. Nulla et ornare elit. Cum sociis natoque penatibus et magnis",
 	"Vivamus laoreet vestibulum pretium. Nulla et ornare elit. Cum sociis natoque penatibus et magnis", "zzLorem ipsum", " test", "test"}, STRING_ARRAY, []string{"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus laoreet vestibulum pretium. Nulla et ornare elit. Cum sociis natoque penatibus et magnis",
@@ -133,7 +130,6 @@ fmt.Println(tabulate.Render("grid"))
 +---------------------+---------------------+----------------+-------------+-------------+
 |         test string |       test string 2 |           test |         row |        bndr |
 +---------------------+---------------------+----------------+-------------+-------------+
-
 ```
 ## Examples
 
@@ -203,6 +199,7 @@ Align Left:
 ```
 
 ### Status
+
 Beta version. There may be edge cases that I have missed, so if your tables don't render properly please open up an issue. 
 
 ## Contribute
@@ -214,11 +211,12 @@ All Contributions are welcome. The todo list is on the bottom of this README. Fe
 Apache License 2.0
 
 ## TODO
-- Add more examples
-- Better Documentation
-- Implement more data table formats
-- Decimal point alignment for floats
+
+- [ ] Add more examples
+- [ ] Better Documentation
+- [ ] Implement more data table formats
+- [ ] Decimal point alignment for floats
 
 ## Acknowledgement
 
-Inspired by Python package https://pypi.python.org/pypi/tabulate
+Inspired by Python package [tabulate](https://pypi.python.org/pypi/tabulate)
