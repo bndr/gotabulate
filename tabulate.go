@@ -414,6 +414,7 @@ func (t *Tabulate) wrapCellData() []*TabulateRow {
 
 		for i, e := range elements {
 			if runewidth.StringWidth(e) > t.MaxSize {
+				elements[i] = runewidth.Truncate(e, t.MaxSize, "")
 				cleanSplit, elements[i] = t.splitElement(e)
 				if cleanSplit {
 					//remove the next rune
@@ -424,7 +425,7 @@ func (t *Tabulate) wrapCellData() []*TabulateRow {
 				} else {
 					addr = 0
 				}
-				new_elements[i] = e[len(elements[i+addr]):]
+				new_elements[i] = e[len(elements[i])+addr:]
 				next.Continuos = true
 			}
 		}
