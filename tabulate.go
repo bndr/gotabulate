@@ -3,6 +3,7 @@ package gotabulate
 import "fmt"
 import "bytes"
 import "github.com/mattn/go-runewidth"
+import "unicode/utf8"
 import "math"
 
 // Basic Structure of TableFormat
@@ -66,15 +67,17 @@ var MIN_PADDING = 5
 
 // Main Tabulate structure
 type Tabulate struct {
-	Data        []*TabulateRow
-	Headers     []string
-	FloatFormat byte
-	TableFormat TableFormat
-	Align       string
-	EmptyVar    string
-	HideLines   []string
-	MaxSize     int
-	WrapStrings bool
+	Data          []*TabulateRow
+	Headers       []string
+	FloatFormat   byte
+	TableFormat   TableFormat
+	Align         string
+	EmptyVar      string
+	HideLines     []string
+	MaxSize       int
+	WrapStrings   bool
+	WrapDelimiter rune
+	SplitConcat   string
 }
 
 // Represents normalized tabulate Row
@@ -191,6 +194,19 @@ func (t *Tabulate) buildRow(elements []string, padded_widths []int, paddings []i
 
 	buffer.WriteString(d.end)
 	return buffer.String()
+}
+
+//SetWrapDelimiter assigns the character ina  string that the rednderer
+//will attempt to split strings on when a cell must be wrapped
+func (t *Tabulate) SetWrapDelimiter(r rune) {
+	t.WrapDelimiter = r
+}
+
+//SetSplitConcat assigns the character that will be used when a WrapDelimiter is
+//set but the renderer cannot abide by the desired split.  This may happen when
+//the WrapDelimiter is a space ' ' but a single word is longer than the width of a cell
+func (t *Tabulate) SetSplitConcat(r string) {
+	t.SplitConcat = r
 }
 
 // Render the data table
@@ -351,9 +367,46 @@ func (t *Tabulate) SetMaxCellSize(max int) {
 	t.MaxSize = max
 }
 
+func (t *Tabulate) splitElement(e string) (bool, string) {
+	//check if we are not attempting to smartly wrap
+	if t.WrapDelimiter == 0 {
+		if t.SplitConcat == "" {
+			return false, runewidth.Truncate(e, t.MaxSize, "")
+		} else {
+			return false, runewidth.Truncate(e, t.MaxSize, t.SplitConcat)
+		}
+	}
+
+	//we are attempting to wrap
+	//grab the current width
+	var i int
+	for i = t.MaxSize; i > 1; i-- {
+		//loop through our proposed truncation size looking for one that ends on
+		//our requested delimiter
+		x := runewidth.Truncate(e, i, "")
+		//check if the NEXT string is a
+		//delimiter, if it IS, then we truncate and tell the caller to shrink
+		r, _ := utf8.DecodeRuneInString(e[i:])
+		if r == 0 || r == 1 {
+			//decode failed, take the truncation as is
+			return false, x
+		}
+		if r == t.WrapDelimiter {
+			return true, x //inform the caller that they can remove the next rune
+		}
+	}
+	//didn't find a good length, truncate at will
+	if t.SplitConcat != "" {
+		return false, runewidth.Truncate(e, t.MaxSize, t.SplitConcat)
+	}
+	return false, runewidth.Truncate(e, t.MaxSize, "")
+}
+
 // If string size is larger than t.MaxSize, then split it to multiple cells (downwards)
 func (t *Tabulate) wrapCellData() []*TabulateRow {
 	var arr []*TabulateRow
+	var cleanSplit bool
+	var addr int
 	next := t.Data[0]
 	for index := 0; index <= len(t.Data); index++ {
 		elements := next.Elements
@@ -361,8 +414,17 @@ func (t *Tabulate) wrapCellData() []*TabulateRow {
 
 		for i, e := range elements {
 			if runewidth.StringWidth(e) > t.MaxSize {
-				elements[i] = runewidth.Truncate(e, t.MaxSize, "")
-				new_elements[i] = e[len(elements[i]):]
+				cleanSplit, elements[i] = t.splitElement(e)
+				if cleanSplit {
+					//remove the next rune
+					r, w := utf8.DecodeRuneInString(e[len(elements[i]):])
+					if r != 0 && r != 1 {
+						addr = w
+					}
+				} else {
+					addr = 0
+				}
+				new_elements[i] = e[len(elements[i+addr]):]
 				next.Continuos = true
 			}
 		}
