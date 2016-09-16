@@ -1,0 +1,25 @@
++-----------+-------------------------+
+|    header |                   value |
++===========+=========================+
+|     test1 |        This is a really |
+|           |     long string, yaaaay |
+|           |       it works, Vivamus |
+|           |      laoreet vestibulum |
+|           |       pretium. Nulla et |
+|           |        ornare elit. Cum |
+|           |          sociis natoque |
+|           |     penatibus et magnis |
+|           |         Vivamus laoreet |
+|           |     vestibulum pretium. |
+|           |         Nulla et ornare |
+|           |        elit. Cum sociis |
+|           |    natoque penatibus et |
+|           |                  magnis |
++-----------+-------------------------+
+|     test2 |    AAAAAAAAAAAAAAAAAAA- |
+|           |    ABBBBBBBBBBBBBBBBBB- |
+|           |    BBBBBBBCCCCCCCCCCCC- |
+|           |    CCCCCCCCCCCCCEEEEEE- |
+|           |    EEEEEEEEEEEEEEDDDDD- |
+|           |               DDDDDDDDd |
++-----------+-------------------------+

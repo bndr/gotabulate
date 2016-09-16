@@ -194,3 +194,16 @@ func readTable(path string) string {
 	}
 	return string(buf)
 }
+
+func TestSplitCell(t *testing.T) {
+	tab := Create([][]string{
+		{"header", "value"},
+		{"test1", "This is a really long string, yaaaay it works, Vivamus laoreet vestibulum pretium. Nulla et ornare elit. Cum sociis natoque penatibus et magnis Vivamus laoreet vestibulum pretium. Nulla et ornare elit. Cum sociis natoque penatibus et magnis"},
+		{"test2", "AAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCEEEEEEEEEEEEEEEEEEEEEDDDDDDDDDDDDDDd"},
+	})
+	tab.SetMaxCellSize(20)
+	tab.SetWrapStrings(true)
+	tab.SetWrapDelimiter(' ')
+	tab.SetSplitConcat("-")
+	assert.Equal(t, tab.Render("grid"), readTable("_tests/smart_wrap"))
+}
