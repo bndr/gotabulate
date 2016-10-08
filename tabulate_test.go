@@ -56,6 +56,15 @@ func TestMaxColWidth(t *testing.T) {
 	// TODO
 }
 
+func TestSingleColumn(t *testing.T) {
+	tab := Create([][]string{
+		{"test"},
+	})
+	tab.SetMaxCellSize(20)
+	tab.SetWrapStrings(true)
+	tab.Render("grid")
+}
+
 // Test Simple
 func TestSimpleFloats(t *testing.T) {
 	tabulate := Create([][]float64{FLOAT_ARRAY, FLOAT_ARRAY, FLOAT_ARRAY[:len(FLOAT_ARRAY)-1]})

@@ -214,7 +214,7 @@ func (t *Tabulate) Render(format ...interface{}) string {
 	var lines []string
 
 	// If headers are set use them, otherwise pop the first row
-	if len(t.Headers) < 1 {
+	if len(t.Headers) < 1 && len(t.Data) > 1 {
 		t.Headers, t.Data = t.Data[0].Elements, t.Data[1:]
 	}
 
@@ -231,7 +231,7 @@ func (t *Tabulate) Render(format ...interface{}) string {
 
 	// Check if Data is present
 	if len(t.Data) < 1 {
-		panic("No Data specified")
+		return ""
 	}
 
 	if len(t.Headers) < len(t.Data[0].Elements) {
