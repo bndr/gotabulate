@@ -407,6 +407,9 @@ func (t *Tabulate) wrapCellData() []*TabulateRow {
 	var arr []*TabulateRow
 	var cleanSplit bool
 	var addr int
+	if len(t.Data) == 0 {
+		return arr
+	}
 	next := t.Data[0]
 	for index := 0; index <= len(t.Data); index++ {
 		elements := next.Elements
