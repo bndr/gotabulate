@@ -270,7 +270,7 @@ func (t *Tabulate) Render(format ...interface{}) string {
 	for index, element := range t.Data {
 		lines = append(lines, t.buildRow(t.padRow(element.Elements, t.TableFormat.Padding), padded_widths, cols, t.TableFormat.DataRow))
 		if index < len(t.Data)-1 {
-			if element.Continuos != true {
+			if element.Continuos != true && !inSlice("betweenLine", t.HideLines) {
 				lines = append(lines, t.buildLine(padded_widths, cols, t.TableFormat.LineBetweenRows))
 			}
 		}
