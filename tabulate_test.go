@@ -1,8 +1,11 @@
 package gotabulate
 
-import "testing"
-import "io/ioutil"
-import "github.com/stretchr/testify/assert"
+import (
+	"io/ioutil"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 var HEADERS = []string{"Header 1", "Header 2", "Header 3", "Header 4", "Header 5"}
 var INT_ARRAY = []int{1, 2, 3, 1000, 200}
@@ -215,4 +218,28 @@ func TestSplitCell(t *testing.T) {
 	tab.SetWrapDelimiter(' ')
 	tab.SetSplitConcat("-")
 	assert.Equal(t, tab.Render("grid"), readTable("_tests/smart_wrap"))
+}
+
+func TestTitlesGrid(t *testing.T) {
+	tabulate := Create([][]string{STRING_ARRAY, STRING_ARRAY, EMPTY_ARRAY})
+	tabulate.SetTitle("Title One", "center")
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("grid"), readTable("_tests/grid_strings_titled"))
+}
+
+func TestTitlesPlain(t *testing.T) {
+	tabulate := Create([][]string{STRING_ARRAY, STRING_ARRAY, EMPTY_ARRAY})
+	tabulate.SetTitle("Make Titles Great Again", "left")
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("plain"), readTable("_tests/plain_strings_titled"))
+}
+
+func TestTitlesSimple(t *testing.T) {
+	tabulate := Create([][]string{STRING_ARRAY, STRING_ARRAY, EMPTY_ARRAY})
+	tabulate.SetTitle("Simple Title", "right")
+	tabulate.SetHeaders(HEADERS)
+	tabulate.SetEmptyString("None")
+	assert.Equal(t, tabulate.Render("simple"), readTable("_tests/simple_strings_titled"))
 }
