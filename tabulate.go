@@ -385,7 +385,8 @@ func (t *Tabulate) SetEmptyString(empty string) {
 // Can be:
 // top - Top line of the table,
 // belowheader - Line below the header,
-// bottom - Bottom line of the table
+// bottomLine - Bottom line of the table
+// betweenLine - Between line of the table
 func (t *Tabulate) SetHideLines(hide []string) {
 	t.HideLines = hide
 }
